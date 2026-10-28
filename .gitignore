@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.log
+.env
+.aws/
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+uv.lock

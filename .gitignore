@@ -9,3 +9,39 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 uv.lock
+.bedrock_agentcore.yaml
+.agentcore.yaml
+*.pem
+*.key
+credentials
+config
+secrets.json
+.env.*
+
+# Terraform (entire directory ignored)
+terraform/
+# Safety nets for any terraform state/plan files elsewhere
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+.terraform.tfstate.lock.info
+crash.log
+crash.*.log
+
+# AI assistant / agent instruction files
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.cursorrules
+.cursor/
+.windsurfrules
+.aider*
+.github/copilot-instructions.md
+.github/instructions/
+.github/prompts/
+.copilot/
+
+# Lambda build artifacts
+lambda/*.zip

@@ -2,7 +2,7 @@
 Customer Support AI Agent — Starter Code
 ==========================================
 Your task is to complete this file by implementing all sections marked
-with # TODO comments.
+with clearly marked implementation sections.
 
 Reference the project instructions and rubric for guidance.
 Work through each section yourself.
@@ -17,7 +17,7 @@ Invoke deployed agent:
   agentcore invoke '{"prompt": "Hello", "customer_id": "CUST-123", "session_id": "s1"}'
 """
 
-# ── Imports ───────────────────────────────────────────────────────────────────
+# ──  Imports ───────────────────────────────────────────────────────────────────
 # These imports are provided. Do not remove them.
 from strands import Agent, tool
 from bedrock_agentcore.runtime import BedrockAgentCoreApp
@@ -45,7 +45,7 @@ logger = logging.getLogger("CSAI_Agent")
 # Allow the sync MCP client helpers to run inside the async AgentCore entrypoint.
 nest_asyncio.apply()
 
-# ── TODO 1 — App Initialisation ───────────────────────────────────────────────
+# ── 1 — App Initialisation ───────────────────────────────────────────────
 # Create a BedrockAgentCoreApp instance.
 # This registers the ASGI server for AgentCore deployment.
 # There must be exactly one instance per deployment.
@@ -53,7 +53,7 @@ nest_asyncio.apply()
 
 # Hint: app = BedrockAgentCoreApp()
 
-# TODO: Create the BedrockAgentCoreApp instance
+# Create the BedrockAgentCoreApp instance
 app = BedrockAgentCoreApp()
 
 
@@ -61,7 +61,7 @@ app = BedrockAgentCoreApp()
 os.environ["BYPASS_TOOL_CONSENT"] = "true"
 
 
-# ── TODO 2 — Configuration ────────────────────────────────────────────────────
+# ── 2 — Configuration ────────────────────────────────────────────────────
 # Replace the placeholder strings with your actual AWS resource values.
 # You collected these in the infrastructure setup section of the project instructions.
 #
@@ -72,13 +72,13 @@ os.environ["BYPASS_TOOL_CONSENT"] = "true"
 # REGION:     your AWS region, e.g. "us-east-1"
 # MEMORY_ID   format: shown in the AgentCore Memory console
 
-GATEWAY_URL = "https://customersupportgateway-yexbxqgy7e.gateway.bedrock-agentcore.us-east-1.amazonaws.com/mcp"   # TODO: Replace with your Gateway URL
-KB_ID       = "O3G5Q7BGUN"          # TODO: Replace with your Knowledge Base ID
-REGION      = "us-east-1"        # TODO: Replace with your AWS region
-MEMORY_ID   = "CustomerSupportMemory-5Jds0j6vL5"        # TODO: Replace with your Memory ID
+GATEWAY_URL = "https://customersupportgateway-yexbxqgy7e.gateway.bedrock-agentcore.us-east-1.amazonaws.com/mcp"   #Replace with your Gateway URL
+KB_ID       = "O3G5Q7BGUN"          #Replace with your Knowledge Base ID
+REGION      = "us-east-1"        #Replace with your AWS region
+MEMORY_ID   = "CustomerSupportMemory-5Jds0j6vL5"        #Replace with your Memory ID
 
 
-# ── TODO 3 — Model and Clients ────────────────────────────────────────────────
+# ── 3 — Model and Clients ────────────────────────────────────────────────
 # Create:
 #   1. A BedrockModel using model_id "global.amazon.nova-2-lite-v1:0"
 #   2. A MemoryClient with region_name=REGION
@@ -88,17 +88,17 @@ MEMORY_ID   = "CustomerSupportMemory-5Jds0j6vL5"        # TODO: Replace with you
 
 model_id = "global.amazon.nova-2-lite-v1:0"
 
-# TODO: Create the BedrockModel instance
+# Create the BedrockModel instance
 model = BedrockModel(model_id=model_id)
 
-# TODO: Create the MemoryClient instance
+# Create the MemoryClient instance
 memory_client = MemoryClient(region_name=REGION)
 
-# TODO: Create the boto3 bedrock-agent-runtime client
+# Create the boto3 bedrock-agent-runtime client
 _bedrock_runtime = boto3.client("bedrock-agent-runtime", region_name=REGION)
 
 
-# ── TODO 4 — Namespace Helper ─────────────────────────────────────────────────
+# ── 4 — Namespace Helper ─────────────────────────────────────────────────
 # Implement get_namespaces() to return a dict mapping strategy type to
 # namespace template string.
 #
@@ -129,7 +129,7 @@ def get_namespaces(mem_client: MemoryClient, memory_id: str) -> Dict:
     return namespaces
 
 
-# ── TODO 5 — Memory Hook ──────────────────────────────────────────────────────
+# ── 5 — Memory Hook ──────────────────────────────────────────────────────
 # Implement MemoryHook, a HookProvider subclass that adds long-term memory.
 #
 # The class needs:
@@ -289,7 +289,7 @@ class MemoryHook(HookProvider):
         registry.add_callback(AfterInvocationEvent, self.save_support_interaction)
 
 
-# ── TODO 6 — Knowledge Base Tool ─────────────────────────────────────────────
+# ── 6 — Knowledge Base Tool ─────────────────────────────────────────────
 # Implement search_knowledge_base(query) using the @tool decorator.
 #
 # Steps:
@@ -345,7 +345,7 @@ def search_knowledge_base(query: str) -> str:
     return "\n---\n".join(chunks)
 
 
-# ── TODO 7 — Loyalty Discount Tool (Code Interpreter) ────────────────────────
+# ── 7 — Loyalty Discount Tool (Code Interpreter) ────────────────────────
 # Implement calculate_loyalty_discount() using the @tool decorator.
 #
 # The tool must:
@@ -537,10 +537,10 @@ def web_browser(prompt: str) -> str:
         try:
             client.stop()
         except Exception:
-            pass
+            logger.debug("Browser session cleanup failed")
 
 
-# ── TODO 8 — Agent Entrypoint ─────────────────────────────────────────────────
+# ── 8 — Agent Entrypoint ─────────────────────────────────────────────────
 # Implement the invoke() function decorated with @app.entrypoint.
 #
 # Steps:
@@ -623,7 +623,7 @@ async def invoke(payload, context=None):
         return f"I'm sorry, I ran into an error while helping you: {e}"
 
 
-# ── CLI entry point (do not modify) ──────────────────────────────────────────
+# ──  CLI entry point (do not modify) ──────────────────────────────────────────
 def main():
     """Run one invocation from the command line for local testing."""
     parser = argparse.ArgumentParser()

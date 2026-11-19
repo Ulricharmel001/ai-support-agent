@@ -26,7 +26,7 @@ from strands.models import BedrockModel
 from strands.tools.mcp.mcp_client import MCPClient
 from mcp.client.streamable_http import streamable_http_client
 import argparse, json
-import os, asyncio, boto3
+import os, asyncio, time, boto3
 from strands.hooks import (
     HookProvider, AfterInvocationEvent, HookRegistry, MessageAddedEvent,
 )
@@ -35,7 +35,8 @@ import uuid
 import nest_asyncio
 from typing import Dict
 from bedrock_agentcore.tools.code_interpreter_client import code_session
-from strands_tools.browser import AgentCoreBrowser
+from bedrock_agentcore.tools.browser_client import BrowserClient
+from websockets.sync.client import connect as ws_connect
 
 
 logging.basicConfig(level=logging.WARNING)
@@ -459,6 +460,86 @@ print(json.dumps(result))
         )
 
 
+@tool
+def web_browser(prompt: str) -> str:
+    """Open a web page in a remote AgentCore browser and return its page title."""
+    url = "https://www.amazon.com"
+    for token in (prompt or "").replace('"', " ").replace("'", " ").split():
+        if token.startswith(("http://", "https://")):
+            url = token.rstrip(".,);")
+            break
+
+    user_agent = (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+    )
+    client = BrowserClient(region=REGION)
+    try:
+        client.start(name="cs-agent-browser")
+        ws_url, headers = client.generate_ws_headers()
+        message_id = 0
+
+        with ws_connect(ws_url, additional_headers=headers, open_timeout=30) as ws:
+            def cdp(method, params=None, session=None):
+                nonlocal message_id
+                message_id += 1
+                current_id = message_id
+                message = {
+                    "id": current_id,
+                    "method": method,
+                    "params": params or {},
+                }
+                if session:
+                    message["sessionId"] = session
+                ws.send(json.dumps(message))
+                while True:
+                    reply = json.loads(ws.recv())
+                    if reply.get("id") == current_id:
+                        return reply
+
+            targets = cdp("Target.getTargets").get("result", {}).get("targetInfos", [])
+            page = next((t for t in targets if t.get("type") == "page"), None)
+            if not page:
+                return "Browser error: no page target available."
+            session = cdp("Target.attachToTarget", {
+                "targetId": page["targetId"],
+                "flatten": True,
+            })["result"]["sessionId"]
+
+            cdp("Page.enable", session=session)
+            cdp("Runtime.enable", session=session)
+            cdp("Network.enable", session=session)
+            cdp("Network.setUserAgentOverride", {
+                "userAgent": user_agent,
+                "acceptLanguage": "en-US,en;q=0.9",
+            }, session=session)
+            cdp("Page.navigate", {"url": url}, session=session)
+
+            for _ in range(20):
+                time.sleep(1)
+                state = cdp("Runtime.evaluate", {
+                    "expression": "document.readyState",
+                    "returnByValue": True,
+                }, session=session)
+                if state.get("result", {}).get("result", {}).get("value") == "complete":
+                    break
+            result = cdp("Runtime.evaluate", {
+                "expression": "document.title",
+                "returnByValue": True,
+            }, session=session)
+            value = result.get("result", {}).get("result", {}).get("value")
+            if value:
+                return f"Page title for {url}: {value}"
+            return f"Could not read the page title from {url}."
+    except Exception as e:
+        return f"Browser error: {e}"
+    finally:
+        try:
+            client.stop()
+        except Exception:
+            pass
+
+
 # ── TODO 8 — Agent Entrypoint ─────────────────────────────────────────────────
 # Implement the invoke() function decorated with @app.entrypoint.
 #
@@ -514,12 +595,11 @@ async def invoke(payload, context=None):
             return "Please include a 'prompt' describing how I can help."
 
         memory_hook = MemoryHook(actor_id, session_id, memory_client, MEMORY_ID)
-        agent_core_browser = AgentCoreBrowser(region=REGION)
 
         tools = [
             search_knowledge_base,
             calculate_loyalty_discount,
-            agent_core_browser.browser,
+            web_browser,
         ]
 
         with MCPClient(lambda: streamable_http_client(GATEWAY_URL)) as mcp_client:

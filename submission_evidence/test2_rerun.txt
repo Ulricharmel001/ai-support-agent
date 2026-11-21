@@ -1,0 +1,30 @@
+===== TEST 2 (rerun) =====
+╭──────────────────────────── CustomerSupportAgent ────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                │
+│ Request ID: 27e2c692-4dc6-4932-804f-744b422c0b8a                             │
+│ ARN:                                                                         │
+│ arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgen │
+│ t-N7wgcz87hH                                                                 │
+│ Logs: aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --follow                 │
+│       aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --since 1h               │
+│ GenAI Dashboard:                                                             │
+│ https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-obser │
+│ vability/agent-core                                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+Your refund for order ORD-002 has been approved! 
+
+- **Refund ID**: REF-APFMNM0S
+- **Status**: Approved
+- **Credit amount**: Full refund (appears in 3-5 business days)
+
+The refund was processed because you reported the item arrived damaged. You 
+should see the credit reflected in your account within the next 3-5 business 
+days.
+
+Is there anything else I can help you with today?

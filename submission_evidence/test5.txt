@@ -1,0 +1,22 @@
+╭─────────────────────────────────────────────────────── CustomerSupportAgent ────────────────────────────────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                                                                       │
+│ Request ID: 81d9b8d5-a643-4d27-9fce-c637c47cebcb                                                                                    │
+│ ARN: arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgent-N7wgcz87hH                                       │
+│ Logs: aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --follow                                                                                                 │
+│       aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --since 1h                                                                                               │
+│ GenAI Dashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-observability/agent-core                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+As a Gold member with 4250 loyalty points, you would receive the following discount on your $150 purchase:
+
+- **Points redemption:** 4000 points = $40 discount  
+- **Gold tier discount:** 10% of $110 (after points discount) = $11 discount  
+- **Final total:** $99  
+
+**Total savings:** $51  
+**Remaining points after purchase:** 349 points  
+
+Your $150 item would therefore cost **$99** after applying both your loyalty points and Gold tier discount.

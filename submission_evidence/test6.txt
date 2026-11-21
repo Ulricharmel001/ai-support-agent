@@ -1,0 +1,13 @@
+╭─────────────────────────────────────────────────────── CustomerSupportAgent ────────────────────────────────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                                                                       │
+│ Request ID: bfb3d8f6-707e-4c2a-a3f5-a68e399626e1                                                                                    │
+│ ARN: arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgent-N7wgcz87hH                                       │
+│ Logs: aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --follow                                                                                                 │
+│       aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --since 1h                                                                                               │
+│ GenAI Dashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-observability/agent-core                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+The title of https://www.amazon.com is **"Amazon.com. Spend less. Smile more."**

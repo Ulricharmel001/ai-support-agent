@@ -1,0 +1,20 @@
+╭─────────────────────────────────────────────────────── CustomerSupportAgent ────────────────────────────────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                                                                       │
+│ Request ID: 65edc9b5-f770-4a63-b2d4-f084e8abee83                                                                                    │
+│ ARN: arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgent-N7wgcz87hH                                       │
+│ Logs: aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --follow                                                                                                 │
+│       aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --since 1h                                                                                               │
+│ GenAI Dashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-observability/agent-core                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+Thanks for reaching out. I've processed a full refund for your order ORD-002 due to the damaged item.
+
+- **Refund ID:** REF-FVUY2DFE  
+- **Status:** Approved  
+- **Refund amount:** Full refund (credit to your original payment method)  
+- **Timeline:** The refund should appear in your account in **3-5 business days**  
+
+If you have any more questions or need further help, just let me know!

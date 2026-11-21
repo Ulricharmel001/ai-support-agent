@@ -1,0 +1,14 @@
+╭─────────────────────────────────────────────────────── CustomerSupportAgent ────────────────────────────────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                                                                       │
+│ Request ID: f72e87e2-3c20-48e6-9ebd-4207ce4e15cf                                                                                    │
+│ ARN: arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgent-N7wgcz87hH                                       │
+│ Logs: aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --follow                                                                                                 │
+│       aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --since 1h                                                                                               │
+│ GenAI Dashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-observability/agent-core                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+Hello Jane, I see that you prefer concise answers when receiving customer service responses about orders and deliveries. If you need 
+any further assistance, feel free to ask!

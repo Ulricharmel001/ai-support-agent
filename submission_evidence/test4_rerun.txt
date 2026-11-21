@@ -1,0 +1,20 @@
+===== TEST 4 (rerun) =====
+╭──────────────────────────── CustomerSupportAgent ────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                │
+│ Request ID: 09b0db35-2a4b-454c-8f6e-40b02b7398d0                             │
+│ ARN:                                                                         │
+│ arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgen │
+│ t-N7wgcz87hH                                                                 │
+│ Logs: aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --follow                 │
+│       aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --since 1h               │
+│ GenAI Dashboard:                                                             │
+│ https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-obser │
+│ vability/agent-core                                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+Hello Jane! You prefer **concise answers**.

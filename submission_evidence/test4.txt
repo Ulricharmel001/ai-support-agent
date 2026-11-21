@@ -1,0 +1,59 @@
+===== TEST 4 =====
+╭──────────────────────────── CustomerSupportAgent ────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                │
+│ Request ID: 0fae0677-debe-4cbc-946b-f32d4780dd77                             │
+│ ARN:                                                                         │
+│ arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgen │
+│ t-N7wgcz87hH                                                                 │
+│ Logs: aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --follow                 │
+│       aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --since 1h               │
+│ GenAI Dashboard:                                                             │
+│ https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-obser │
+│ vability/agent-core                                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+Thanks for sharing those details, Jane. I've confirmed the status of your order 
+ORD-001:
+
+**Order Status:** ✅ **Shipped**
+- **Item:** Wireless Headphones Pro ($89.99 x 1)
+- **Carrier:** UPS
+- **Tracking Number:** TRK987654321 
+- **Estimated Delivery:** November 23, 2026
+
+The order is on its way and you can track the package using the tracking number 
+with UPS. Let me know if you need anything else!
+===== TEST 4 =====
+╭──────────────────────────── CustomerSupportAgent ────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                │
+│ Request ID: 1f65954b-6dfe-4cb5-96f7-7748ff50fa08                             │
+│ ARN:                                                                         │
+│ arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgen │
+│ t-N7wgcz87hH                                                                 │
+│ Logs: aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --follow                 │
+│       aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --since 1h               │
+│ GenAI Dashboard:                                                             │
+│ https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-obser │
+│ vability/agent-core                                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+Hello! I can see you’ve shared some order details, but I don’t have access to 
+your name or any personal preferences yet. To look up your account and 
+preferences, I’ll need either your **customer ID** or the **email address** 
+associated with your Amazon account. 
+
+If you’d like, I can help you check the status of your orders (ORD-001 and 
+ORD-002), track deliveries, or process a refund for ORD-002 once I verify a few 
+details.
+
+Could you please share your customer ID or email address so I can proceed?

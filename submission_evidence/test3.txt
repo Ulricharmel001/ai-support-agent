@@ -1,0 +1,25 @@
+╭─────────────────────────────────────────────────────── CustomerSupportAgent ────────────────────────────────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                                                                       │
+│ Request ID: 7bc2cada-f82a-4fda-8dce-422e51e32244                                                                                    │
+│ ARN: arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgent-N7wgcz87hH                                       │
+│ Logs: aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --follow                                                                                                 │
+│       aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT --log-stream-name-prefix                │
+│ "2026/11/21/[runtime-logs" --since 1h                                                                                               │
+│ GenAI Dashboard: https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-observability/agent-core                    │
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+The Kindle Paperwhite has a **30-day return policy** from the date of delivery.
+
+This means you have 30 days from when you receive the item to start a return if you're not satisfied or if there's an issue with the 
+product. The item must be returned in its original condition with all accessories included.
+
+If you need to return your Kindle Paperwhite, you can:
+1. Go to **Your Orders** in your Amazon account
+2. Select the Kindle Paperwhite order
+3. Choose a reason for return and your preferred return method
+4. Print the return label or show the QR code at your drop-off point
+
+Would you like me to help you process a return for your Kindle Paperwhite order? If so, I can assist with generating a prepaid return 
+label or checking the refund status if you've already initiated one.

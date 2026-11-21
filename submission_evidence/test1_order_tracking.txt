@@ -1,0 +1,30 @@
+╭──────────────────────────── CustomerSupportAgent ────────────────────────────╮
+│ Session: d6ec6fd4-7e3d-49b7-a0fa-1507915728c2                                │
+│ Request ID: 99e036da-4ee1-4201-b063-62de9bb887da                             │
+│ ARN:                                                                         │
+│ arn:aws:bedrock-agentcore:us-east-1:withheld:runtime/CustomerSupportAgen │
+│ t-N7wgcz87hH                                                                 │
+│ Logs: aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --follow                 │
+│       aws logs tail                                                          │
+│ /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-N7wgcz87hH-DEFAULT      │
+│ --log-stream-name-prefix "2026/11/21/[runtime-logs" --since 1h               │
+│ GenAI Dashboard:                                                             │
+│ https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#gen-ai-obser │
+│ vability/agent-core                                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+Response:
+Thanks for your patience! I have retrieved the details for your order 
+**ORD-001**:
+
+- **Status:** Shipped  
+- **Carrier:** UPS  
+- **Tracking Number:** TRK987654321  
+- **Estimated Delivery Date:** November 23, 2026  
+- **Order Total:** $89.99  
+- **Item:** Wireless Headphones Pro (Qty: 1)
+
+Your order is on its way and should arrive by the estimated date. If you have 
+any further questions or need updates, feel free to ask!

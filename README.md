@@ -1,227 +1,195 @@
 # Customer Support AI Agent
 
-An AI customer support agent for a fictional Amazon store, built with Amazon Bedrock AgentCore, Strands Agents, and MCP. It runs as a Bedrock AgentCore Runtime and is invoked with a single HTTP-style JSON payload.
+A production-style customer-support assistant built with Amazon Bedrock AgentCore, Strands Agents, and MCP. It combines backend order APIs, product documents, deterministic calculations, long-term memory, and live browser access behind one conversational interface.
 
-## 1. What it does
+The deployed agent accepts a prompt, customer ID, and session ID. It chooses the right tool, calls it, and returns a clear support answer.
 
-- **Order tracking** — status, carrier, tracking number, delivery estimate (Gateway → Lambda).
-- **Returns and refunds** — initiate refunds, check status, generate return labels (Gateway → Lambda).
-- **Product and policy Q&A** — product details, return policies, loyalty tiers (Bedrock Knowledge Base / RAG).
-- **Loyalty discounts** — exact points + tier arithmetic in AgentCore Code Interpreter.
-- **Long-term memory** — customer facts and preferences across sessions (AgentCore Memory).
-- **Live web access** — reads live page titles through a remote AgentCore Browser session.
+---
 
-## 2. How the system works (request lifecycle)
+## 1. Project goal
 
-1. `agentcore invoke` sends `{"prompt", "customer_id", "session_id"}` to the runtime entrypoint `invoke()` in `main.py`.
-2. `invoke()` extracts the values, defaults `session_id` to a UUID, and creates a `MemoryHook` for that actor/session.
-3. The hook is registered with `MessageAddedEvent` and `AfterInvocationEvent`.
-4. On `MessageAddedEvent`, `retrieve_customer_context()` queries both memory namespaces and prepends `"Customer Context:\n..."` to the user message.
-5. `invoke()` builds the tools list: three local `@tool` functions plus every MCP tool returned by `mcp_client.list_tools_sync()`.
-6. `Agent` receives the enriched message, `SYSTEM_PROMPT`, model, tools, and hooks. Nova 2 Lite decides which tool to call.
-7. Strands executes the selected tool, appends the result to the conversation, and the model produces the final answer.
-8. On `AfterInvocationEvent`, `save_support_interaction()` stores the last user + assistant messages as `USER` and `ASSISTANT` events in AgentCore Memory.
-9. `invoke()` returns the first text block of the agent response.
+The goal is to demonstrate a complete agent workflow, not a simple chatbot. Customer support requires several different systems:
 
-## 3. Architecture
+- structured order and refund data,
+- product documents and policies,
+- reliable reward calculations,
+- customer history and preferences,
+- live web information.
 
-| Component | Purpose |
-|---|---|
-| Strands Agents | Agent loop, tool dispatch, hooks, model integration |
-| Amazon Nova 2 Lite (`global.amazon.nova-2-lite-v1:0`) | Reasoning and response generation |
-| Bedrock AgentCore Runtime | Hosts the agent (`CustomerSupportAgent-sYElPD2X4q`) |
-| AgentCore Gateway (MCP, `NONE` authorizer) | Exposes six Lambda/API tools over MCP |
-| Lambda `order-tracker` / `refund-processor` | Backend order, customer, and refund logic |
-| API Gateway REST API `2pkyij0gmi` | HTTP frontend for `order-tracker` |
-| Bedrock Knowledge Base `O3G5Q7BGUN` | Titan Embeddings v2 + OpenSearch Serverless RAG |
-| AgentCore Memory `CustomerSupportMemory-5Jds0j6vL5` | Semantic facts + user preferences |
-| AgentCore Code Interpreter | Isolated Python sandbox for discount math |
-| AgentCore Browser (remote CDP) | Live web navigation without local Playwright |
+This project puts all of them behind one runtime. The model does not invent backend data. It uses tools and explains the returned result.
 
-## 4. Tools and what each one does
+---
 
-### Local tools (defined in `main.py`)
+## 2. What the agent can do
 
-| Tool | Signature | What it does | When the model uses it |
-|---|---|---|---|
-| `search_knowledge_base` | `(query: str) -> str` | Calls `bedrock-agent-runtime.retrieve` on KB `O3G5Q7BGUN`; joins chunks with `\n---\n` | Product specs, return policies, warranty, loyalty-tier questions |
-| `calculate_loyalty_discount` | `(loyalty_points: int, tier: str, order_total: float, product_category: str = "standard") -> str` | Generates Python for point redemption (500-point steps, max 50%), tier discount (Silver 0%, Gold 10%, Platinum 15%), points earned, and remainder; executes it in `code_session`; falls back to tier-only math on failure | Any discount/points calculation request |
-| `web_browser` | `(prompt: str) -> str` | Starts a remote AgentCore Browser session, attaches to the page target over CDP, overrides the user agent, navigates to the URL found in the prompt (default Amazon), polls `document.readyState`, reads `document.title`, then stops the session | Requests for live/current external web information |
+### Order support
 
-### Gateway tools (discovered automatically via MCP)
+Finds orders, lists customer orders, and reads customer profiles through the AgentCore Gateway and the `order-tracker` Lambda.
 
-| Tool name | Backend | Purpose |
+### Refund support
+
+Creates refunds, checks refund status, and generates return labels through the `refund-processor` Lambda.
+
+### Product and policy answers
+
+Searches the Bedrock Knowledge Base for product details, return windows, warranties, and loyalty rules. The source is `product_catalog.txt`.
+
+### Loyalty discount calculation
+
+Uses Code Interpreter to calculate points redeemed, tier discount, final total, savings, earned points, and remaining points.
+
+### Long-term memory
+
+Saves customer facts and preferences with AgentCore Memory, then loads them into later prompts.
+
+### Live browser access
+
+Opens a live page through the remote AgentCore Browser and reads the page title using raw CDP over WebSocket.
+
+---
+
+## 3. How the system works
+
+1. `agentcore invoke` sends `{"prompt", "customer_id", "session_id"}` to `invoke()` in `main.py`.
+2. The memory hook loads saved facts and preferences for that customer.
+3. The agent loads three local tools and six Gateway MCP tools.
+4. Nova 2 Lite chooses the correct tool.
+5. Strands Agents executes the tool and returns the result to the model.
+6. The model writes the customer-facing answer.
+7. The interaction is saved back to AgentCore Memory.
+
+The full flow, commands, actual outputs, and screenshots are in [HOW_IT_WORKS.md](HOW_IT_WORKS.md).
+
+---
+
+## 4. Deployment context
+
+| Setting | Value | Why it matters |
 |---|---|---|
-| `order-tracker___get_order` | Lambda `order-tracker` | Look up one order by `order_id` |
-| `order-tracker___get_customer_orders` | Lambda `order-tracker` | List all orders for a `customer_id` |
-| `order-tracker___get_customer` | Lambda `order-tracker` | Look up a customer profile |
-| `refund-processor___initiate_refund` | Lambda `refund-processor` | Create an approved refund |
-| `refund-processor___check_refund_status` | Lambda `refund-processor` | Check a refund ID |
-| `refund-processor___get_return_label` | Lambda `refund-processor` | Generate a prepaid return label |
+| AWS account | Withheld for privacy | This is the billing and security boundary that owns the deployed resources. The active AWS CLI profile must point to this account to test the agent. |
+| Region | `us-east-1` | This is where the runtime, Gateway, Lambda functions, Knowledge Base, and Memory were created. Region must match because AWS service resources are regional. |
+| Runtime ID | `CustomerSupportAgent-N7wgcz87hH` | This identifies the deployed agent. |
+| Model | `global.amazon.nova-2-lite-v1:0` | This is the foundation model used for reasoning and answers. |
 
-### How a tool is called
+Account details are intentionally not printed in this document. Testing requires the AWS credentials configured on the machine, not account numbers inside the README.
 
-Inside the agent, tools are registered here (`main.py`, `invoke()`):
+---
 
-```python
-tools = [search_knowledge_base, calculate_loyalty_discount, web_browser]
-with MCPClient(lambda: streamable_http_client(GATEWAY_URL)) as mcp_client:
-    tools.extend(mcp_client.list_tools_sync())
-agent = Agent(model=model, tools=tools, hooks=[memory_hook], system_prompt=SYSTEM_PROMPT)
-```
+## 5. System design
 
-Strands sends tool schemas to Nova 2 Lite; the model returns a tool call; Strands invokes the matching function. You do not call tools manually in normal use.
-
-Direct MCP call for debugging (no authorizer):
-
-```bash
-curl -s -X POST \
-  "https://customersupportgateway-yexbxqgy7e.gateway.bedrock-agentcore.us-east-1.amazonaws.com/mcp" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: application/json, text/event-stream' \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"order-tracker___get_order","arguments":{"order_id":"ORD-001"}}}'
-```
-
-## 5. Functions in `main.py`
-
-| Function | Role |
-|---|---|
-| `get_namespaces(mem_client, memory_id)` | Reads memory strategies and maps `SEMANTIC` / `USER_PREFERENCE` to `cs_agent/{actorId}/facts` and `cs_agent/{actorId}/preferences` |
-| `MemoryHook.__init__(actor, session, client, memory_id)` | Stores per-request identity plus the resolved namespaces |
-| `MemoryHook._text_from_content(content)` | Extracts plain text from Strands content blocks |
-| `MemoryHook._has_tool_block(content)` | Detects tool-result blocks so they are not saved as user text |
-| `MemoryHook.retrieve_customer_context(event)` | Retrieves up to 5 memories per namespace and injects them as `"[TYPE] text"` lines |
-| `MemoryHook.save_support_interaction(event)` | Walks messages backwards for the last user/assistant texts and calls `create_event` |
-| `MemoryHook.register_hooks(registry)` | Registers the two callbacks listed above |
-| `search_knowledge_base(query)` | RAG retrieval wrapper |
-| `calculate_loyalty_discount(...)` | Code Interpreter discount calculator with fallback |
-| `web_browser(prompt)` | Remote browser CDP client (see §4) |
-| `invoke(payload, context=None)` | AgentCore entrypoint; full lifecycle in §2; catches exceptions and returns a friendly error string |
-| `main()` | Local CLI helper for one invocation (does not modify deployed behavior) |
-
-`setup_permissions.py` reads `.bedrock_agentcore.yaml`, finds the runtime role, and applies only the `CustomerSupportIntegrations` inline policy (KB retrieve, memory operations, browser operations).
-
-## 6. Errors encountered and how they were fixed
-
-| Symptom / error | Cause | Resolution |
+| Layer | Service | Why it is used |
 |---|---|---|
-| `Direct Code Deploy deployment unavailable (uv not found)` | `uv` not on `PATH` for the toolkit | Add `~/.local/share/uvtool/bin` to `PATH` before `agentcore deploy` |
-| `uv pip install -e .` setuptools auto-discovery failure | Extra top-level dirs (`lambda/`, `terraform/`) | Install dependencies only with `uv sync --no-install-project` |
-| `ImportError: browser was removed in v0.9.0` | `strands-agents-tools` 0.9 removed `AgentCoreBrowser` | Pin `>=0.2.21,<0.9.0` |
-| `/var/task/playwright/driver/node: ... libatomic.so.1: cannot open` on deployed runtime | Runtime is `linux/arm64`; local Playwright driver cannot start | Replace with `web_browser`, using `BrowserClient` + raw CDP over the automation WebSocket |
-| Amazon title `Sorry! Something went wrong!` | Bot detection | `Network.setUserAgentOverride` before navigation |
-| Target name with `_` failed regex `([0-9a-zA-Z][-]?){1,100}` | Gateway target names reject underscores | Use `refund-processor` |
-| `Credential provider configurations is not defined` | Gateway target needed IAM credentials | Add `credentialProviderType: GATEWAY_IAM_ROLE` |
-| `Failed to parse OpenAPI specification: ... responses is missing` | API Gateway methods lacked responses | Add 200 `put-method-response` to each GET, redeploy API, then `synchronize-gateway-targets` |
-| OpenSearch Serverless policy validation errors | Network/access policies need a top-level JSON array; key is `Principal` (singular) | Corrected policy documents |
-| OpenSearch 403 on index creation | Missing signed header | Add `x-amz-content-sha256` to SigV4 request |
-| KB retrieval returned `[]` | Index eventual consistency | Re-query after indexing settled |
-| Memory recall failed immediately after first turn | Extraction is asynchronous | Wait 1–2 minutes before the recall turn |
-| X-Ray observability `ValidationException` on deploy | Account trace destination not configured | Non-blocking; runtime deploys and runs normally |
-| `ERROR:asyncio:Task was destroyed but it is pending!` | Shutdown cleanup in local tests | Harmless; does not affect responses |
+| Runtime | Bedrock AgentCore Runtime | Hosts the deployed agent |
+| Agent loop | Strands Agents | Model loop, tool dispatch, hooks |
+| Model | Amazon Nova 2 Lite | Tool choice and final response |
+| Tool gateway | Bedrock AgentCore Gateway | Exposes backend Lambda tools as MCP tools |
+| Backend data | Lambda + API Gateway | Order, customer, and refund operations |
+| Knowledge | Bedrock Knowledge Base | Retrieves product and policy chunks |
+| Vector store | OpenSearch Serverless | Stores embeddings for semantic search |
+| Object storage | S3 | Holds the product catalog source file |
+| Calculations | Code Interpreter | Runs deterministic discount arithmetic |
+| Memory | AgentCore Memory | Stores customer facts and preferences |
+| Browser | AgentCore Browser + CDP | Reads live web page data |
 
-Errors inside `invoke()` are caught, logged, and returned as `"I'm sorry, I ran into an error while helping you: ..."`. Tool failures are returned as strings so the model can explain them instead of crashing.
+The design separates responsibilities. Structured data stays in backend APIs, documents stay in RAG, calculations run in code, memory lives in AgentCore Memory, and the model only orchestrates.
 
-## 7. Repository layout
+---
 
-```text
-.
-├── main.py               # Agent, tools, memory hook, MCP client, entrypoint
-├── setup_permissions.py  # Post-deploy IAM policy for KB, Memory, Browser
-├── product_catalog.txt   # Knowledge Base source document
-├── lambda/
-│   ├── order_tracker.py      # Order/customer lookup (API Gateway proxy)
-│   ├── refund_processor.py   # Refunds, status, return labels
-│   └── lambda_schema         # Gateway tool schema
-├── pyproject.toml        # Dependencies (Python >=3.13)
-├── README.md             # This guide
-├── INSTRUCTIONS.md       # Course instructions and submission checklist
-├── SUBMISSION.md         # Captured test outputs, alarm, reflection
-├── AGENTS.md             # Repo agent rules
-└── .bedrock_agentcore.yaml  # Generated deploy config (git-ignored)
-```
-
-## 8. Deployed resources (us-east-1, account 561026940393)
+## 6. Deployed resources
 
 | Resource | Identifier |
 |---|---|
-| Runtime ARN | `arn:aws:bedrock-agentcore:us-east-1:561026940393:runtime/CustomerSupportAgent-sYElPD2X4q` |
-| Gateway ID / URL | `customersupportgateway-yexbxqgy7e` · `https://customersupportgateway-yexbxqgy7e.gateway.bedrock-agentcore.us-east-1.amazonaws.com/mcp` |
-| Gateway targets | `order-tracker` (`S4UZYU71CG`), `refund-processor` (`XOGQS2JBXO`) |
-| Knowledge Base | `O3G5Q7BGUN` (data source `KXWZFORYUK`) |
-| OpenSearch collection | `csai-kb` (`wqebi8k5jvsm41rdzh66`) |
-| S3 (KB source) | `csai-kb-561026940393` |
-| Memory | `CustomerSupportMemory-5Jds0j6vL5` |
-| API Gateway | `2pkyij0gmi`, stage `prod` |
-| Runtime role | `AmazonBedrockAgentCoreSDKRuntime-us-east-1-1687b1c02b` |
-| Log group | `/aws/bedrock-agentcore/runtimes/CustomerSupportAgent-sYElPD2X4q-DEFAULT` |
+| Runtime | `CustomerSupportAgent-N7wgcz87hH` |
+| Gateway | `customersupportgateway-q0bnbscqkv` |
+| Order target | `PGBOPONMKY` |
+| Refund target | `ZUKULDYCNJ` |
+| Knowledge Base | `KB9IFNPKDL` |
+| Data source | `U4KSWTGQMY` |
+| OpenSearch collection | `vt6d1m040prp2a1hutz8` |
+| S3 KB source | Private bucket, name withheld |
+| Memory | `CustomerSupportMemory-iePu3ICXR7` |
+| API Gateway | `oxz6dfft9c`, stage `prod` |
+| Lambda functions | `order-tracker`, `refund-processor` |
 
-## 9. Local setup
+---
+
+## 7. Repository structure
+
+| File | Purpose |
+|---|---|
+| `main.py` | Agent definition, tools, memory hooks, MCP client, entrypoint |
+| `HOW_IT_WORKS.md` | Detailed workflow and Test 1–6 evidence |
+| `setup_permissions.py` | Applies IAM permissions for KB, Memory, and Browser |
+| `product_catalog.txt` | Source document for the Knowledge Base |
+| `lambda/order_tracker.py` | Order and customer lookup backend |
+| `lambda/refund_processor.py` | Refund, status, and return label backend |
+| `lambda/lambda_schema` | Tool schema for the refund Gateway target |
+| `pyproject.toml` | Python dependencies |
+| `submission_evidence/` | Screenshots and terminal outputs |
+| `INSTRUCTIONS.md` | Course submission checklist |
+
+---
+
+## 8. Local setup and deployment
+
+Activate the existing environment:
 
 ```bash
+cd /home/ulrich/Downloads/Chat-support-agentcore/ai-support-agent
+source .venv/bin/activate
 export PATH="$HOME/.local/share/uvtool/bin:$PATH"
+export AGENTCORE_SUPPRESS_RECOMMENDATION=1
+```
+
+If `.venv` is missing:
+
+```bash
 uv venv --python 3.13 .venv
 uv sync --no-install-project
 source .venv/bin/activate
-python -m py_compile main.py
 ```
 
-Run one invocation locally without editing the entrypoint:
+Redeploy after code changes:
 
 ```bash
-python - <<'PY'
-import asyncio, main
-print(asyncio.run(main.invoke({
-    "prompt": "Can you track order ORD-001?",
-    "customer_id": "CUST-123",
-    "session_id": "local-1",
-})))
-PY
-```
-
-## 10. Deploy
-
-`agentcore configure` has already been run with `--deployment-type direct_code_deploy --runtime PYTHON_3_13 --non-interactive`. To redeploy after code changes:
-
-```bash
-export AGENTCORE_SUPPRESS_RECOMMENDATION=1
-export PATH="$HOME/.local/share/uvtool/bin:$PATH"
 agentcore deploy
 python setup_permissions.py
 ```
 
-Use `python setup_permissions.py --dry-run` to inspect the IAM policy before applying it.
+---
 
-## 11. Invoke and verify
+## 9. Verification
 
-```bash
-agentcore invoke '{"prompt":"<prompt>","customer_id":"CUST-123","session_id":"<id>"}'
-```
+The deployed agent was tested with six scenarios:
 
-| Test | Prompt | Expected |
-|---|---|---|
-| 1 | `Can you track order ORD-001?` | SHIPPED, UPS, `TRK987654321`, delivery estimate |
-| 2 | `I want to return my Kindle Paperwhite (ORD-002). Please initiate a refund.` | Refund ID, APPROVED, 3-5 business days |
-| 3 | `What are the benefits of the Platinum loyalty tier?` | Free same-day shipping, 15% discount, priority support |
-| 4a | `Hi, I am Jane. I prefer concise responses.` (`session_id: s-A`) | Acknowledged |
-| 4b | `Do you remember my name and communication preference?` (`session_id: s-B`) | Recalls Jane + concise responses |
-| 5 | `I am a Gold member with 4250 points. Calculate my discount on a $150 standard order.` | 4000 points, 10% tier, $99 final, 349 remaining |
-| 6 | `Go to https://www.amazon.com and tell me the page title.` | `Amazon.com. Spend less. Smile more.` |
+1. order tracking,
+2. refund initiation,
+3. knowledge base retrieval,
+4-1. save customer memory,
+4-2. recall customer memory,
+5. loyalty discount calculation,
+6. live browser title lookup.
 
-Test 4 needs 1–2 minutes between turns and the same `customer_id`. Test 2 creates a real refund record.
+Commands, actual outputs, tool paths, and screenshots are in [HOW_IT_WORKS.md](HOW_IT_WORKS.md).
 
-## 12. Monitoring and submission
+---
 
-```bash
-aws logs tail /aws/bedrock-agentcore/runtimes/CustomerSupportAgent-sYElPD2X4q-DEFAULT \
-  --since 30m --follow
-```
+## 10. Key implementation decisions
 
-The `CSAIErrorFilter` metric filter and `CSAI-Agent-Errors` alarm track more than 5 `ERROR` entries in 5 minutes. `SUBMISSION.md` holds the captured outputs, alarm details, and the written reflection required by `INSTRUCTIONS.md`.
+- **Gateway MCP tools:** Backend APIs are exposed through AgentCore Gateway instead of being hard-coded into the agent.
+- **Knowledge Base RAG:** Product and policy facts come from indexed documents, not model memory.
+- **Code Interpreter:** Loyalty math is executed as code for consistency.
+- **Memory hooks:** Customer context is loaded before the model runs and saved after each turn.
+- **Remote browser:** Browser work runs in the cloud, avoiding ARM64 Playwright failures.
+- **Error handling:** Tool and invocation errors are caught and returned as friendly answers.
 
-## 13. References
+---
+
+## 11. References
 
 - [Amazon Bedrock AgentCore Documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/agentcore.html)
+- [Amazon Bedrock Knowledge Bases](https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-bases.html)
+- [Amazon OpenSearch Serverless](https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless.html)
 - [Strands Agents Documentation](https://strandsagents.com)
-- [MCP Inspector](https://github.com/modelcontextprotocol/inspector)
+- [Model Context Protocol](https://modelcontextprotocol.io)
 - [uv Package Manager](https://docs.astral.sh/uv/)

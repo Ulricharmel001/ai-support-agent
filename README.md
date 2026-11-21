@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/customer-support-agent-banner.png" alt="Customer Support AI Agent" width="100%">
+</p>
+
 # Customer Support AI Agent
 
 A production-style customer-support assistant built with Amazon Bedrock AgentCore, Strands Agents, and MCP. It combines backend order APIs, product documents, deterministic calculations, long-term memory, and live browser access behind one conversational interface.
